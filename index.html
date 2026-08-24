@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#173f2b">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="SylvaCalc">
+  <link rel="manifest" href="manifest.json">
+  <title>SylvaCalc</title>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      background: #eef3ef;
+      color: #15251b;
+      padding: env(safe-area-inset-top) 16px env(safe-area-inset-bottom);
+    }
+
+    .app {
+      width: 100%;
+      max-width: 520px;
+      margin: 0 auto;
+      padding: 28px 18px;
+    }
+
+    .brand {
+      text-align: center;
+      margin-bottom: 26px;
+    }
+
+    .brand .icon {
+      font-size: 46px;
+      line-height: 1;
+    }
+
+    .brand h1 {
+      margin: 8px 0 4px;
+      font-size: 30px;
+      letter-spacing: .5px;
+    }
+
+    .brand p {
+      margin: 0;
+      color: #68756d;
+      font-size: 15px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 22px;
+      padding: 22px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.08);
+    }
+
+    label {
+      display: block;
+      font-size: 15px;
+      font-weight: 700;
+      margin: 16px 0 8px;
+    }
+
+    label:first-child { margin-top: 0; }
+
+    .input-wrap {
+      position: relative;
+    }
+
+    input {
+      width: 100%;
+      padding: 15px 48px 15px 14px;
+      border: 1px solid #cfd8d1;
+      border-radius: 14px;
+      font-size: 18px;
+      outline: none;
+      background: #fbfdfb;
+    }
+
+    input:focus {
+      border-color: #2f6d49;
+      box-shadow: 0 0 0 3px rgba(47,109,73,.12);
+    }
+
+    .unit {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #6f7a72;
+      font-weight: 700;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 22px;
+      padding: 15px;
+      border: 0;
+      border-radius: 14px;
+      background: #173f2b;
+      color: white;
+      font-size: 17px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button:active {
+      transform: scale(.99);
+    }
+
+    .result {
+      margin-top: 20px;
+      padding: 18px;
+      border-radius: 18px;
+      background: #f0f7f2;
+      display: none;
+      text-align: center;
+    }
+
+    .result .label {
+      color: #5e6c63;
+      font-size: 14px;
+      margin-bottom: 6px;
+    }
+
+    .result .value {
+      font-size: 38px;
+      font-weight: 800;
+      color: #173f2b;
+    }
+
+    .detail {
+      margin-top: 10px;
+      color: #667268;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 18px;
+      font-size: 12px;
+      color: #7b867f;
+    }
+
+    .offline {
+      display: inline-block;
+      margin-top: 6px;
+      padding: 5px 9px;
+      border-radius: 999px;
+      background: #e7efe9;
+      color: #34533f;
+      font-weight: 700;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="app">
+    <div class="brand">
+      <div class="icon">🌲</div>
+      <h1>SylvaCalc</h1>
+      <p>Tree Height Calculator</p>
+    </div>
+
+    <section class="card">
+      <label for="jarak">Jarak horizontal ke pohon</label>
+      <div class="input-wrap">
+        <input type="number" id="jarak" step="0.01" inputmode="decimal" placeholder="Contoh: 20">
+        <span class="unit">m</span>
+      </div>
+
+      <label for="sudutAtas">Sudut ke pucuk pohon</label>
+      <div class="input-wrap">
+        <input type="number" id="sudutAtas" step="0.01" inputmode="decimal" placeholder="Contoh: 35">
+        <span class="unit">°</span>
+      </div>
+
+      <label for="sudutBawah">Sudut ke pangkal pohon</label>
+      <div class="input-wrap">
+        <input type="number" id="sudutBawah" step="0.01" inputmode="decimal" placeholder="Contoh: -5">
+        <span class="unit">°</span>
+      </div>
+
+      <button id="hitungBtn">Hitung Tinggi Pohon</button>
+
+      <div class="result" id="hasil">
+        <div class="label">Tinggi total pohon</div>
+        <div class="value" id="tinggi">0.00 m</div>
+        <div class="detail" id="detail"></div>
+      </div>
+    </section>
+
+    <div class="footer">
+      Rumus: H = D × [tan(α) − tan(β)]
+      <br>
+      <span class="offline">Siap digunakan offline setelah dipasang</span>
+    </div>
+  </main>
+
+  <script>
+    function degToRad(deg) {
+      return deg * Math.PI / 180;
+    }
+
+    function hitungTinggi() {
+      const D = parseFloat(document.getElementById("jarak").value);
+      const alpha = parseFloat(document.getElementById("sudutAtas").value);
+      const beta = parseFloat(document.getElementById("sudutBawah").value);
+
+      if ([D, alpha, beta].some(Number.isNaN)) {
+        alert("Masukkan semua data terlebih dahulu.");
+        return;
+      }
+
+      if (D <= 0) {
+        alert("Jarak harus lebih besar dari 0 meter.");
+        return;
+      }
+
+      if (Math.abs(alpha) >= 90 || Math.abs(beta) >= 90) {
+        alert("Sudut harus berada di antara -90° dan 90°.");
+        return;
+      }
+
+      const tinggiAtas = D * Math.tan(degToRad(alpha));
+      const tinggiBawah = D * Math.tan(degToRad(beta));
+      const tinggiTotal = tinggiAtas - tinggiBawah;
+
+      if (tinggiTotal <= 0) {
+        alert("Hasil tinggi tidak valid. Periksa kembali sudut pucuk dan pangkal.");
+        return;
+      }
+
+      document.getElementById("tinggi").textContent = tinggiTotal.toFixed(2) + " m";
+      document.getElementById("detail").innerHTML =
+        `D = ${D} m · α = ${alpha}° · β = ${beta}°<br>` +
+        `Bagian atas = ${tinggiAtas.toFixed(2)} m · Bagian bawah = ${Math.abs(tinggiBawah).toFixed(2)} m`;
+
+      document.getElementById("hasil").style.display = "block";
+    }
+
+    document.getElementById("hitungBtn").addEventListener("click", hitungTinggi);
+
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./service-worker.js");
+      });
+    }
+  </script>
+</body>
+</html>
